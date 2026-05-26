@@ -6,10 +6,20 @@ GET http://localhost:3000/projects
 ###
 GET http://localhost:3000/journals
 ###
-POST http://localhost:3000
+POST http://localhost:3000/project
 Content-Type: application/json
 
 {
     "title": "Encryption Program",
     "content": "I've been working on a program that can encrypt and decrypt a USB drive. This is the process"
+}
+
+###
+POST http://localhost:3000/journal
+Content-Type: application/json
+
+{
+    "project_id" : 2,
+    "title": "USB- Encryption Attempt 1",
+    "content": "I was able to throw together a relatively quick bit of code that would look through every file in the USB and attempt to encrypt the file. In a perfect world, with perfect hardware this program would have hypothetically worked. Instead it encrypted half the flash drive and forced the drive into a read-only state to protect the rest of the data."
 }

@@ -9,7 +9,7 @@ const app = express()
 app.use(express.json()) // Allows the use of JSON file type
 // Setup database
 async function setupDatabase () {
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    await new Promise(resolve => setTimeout(resolve, 2000))
     console.log("Starting connection to database...")
     await setup()
 }
@@ -51,6 +51,7 @@ async function queryFromFile(filePath){
     }
 }
 
+// get request
 app.get('/', async (req, res) => {
     re404(req, res)
 })
@@ -81,13 +82,43 @@ app.get('/journals', async (req, res) => {
     }
 })
 
-app.post('/', async (req, res) => {
+// post request
+app.post('/project', async (req, res) => {
     const {title, content} = req.body
-    console.log(content)
-    res.status(200).send({
-        "Message": `Creating new project: ${title}`
-    })
+    console.log(`Post - Project ${title}`)
+    sql = "INSERT INTO projects (title, content) VALUES ($1, $2)"
+    try {
+        result = pool.query(sql, [title, content])
+        console.log(result)
+        res.status(200).send({
+            message: "Added project to database"
+        })
+    } catch (err) {
+        console.log(err)
+        res.status(500).send({
+            err: "An error occured while attempting to update the database"
+        })
+    }
 })
+
+app.post('/journal', async (req, res) => {
+    const {project_id, title, content} = req.body
+    console.log(`Post - Journal ${title}`)
+    sql = "INSERT INTO journals (project_id, title, content) VALUES ($1, $2, $3)"
+    try {
+        result = pool.query(sql, [project_id, title, content])
+        console.log(result)
+        res.status(200).send({
+            message: "Added journal to database"
+        })
+    } catch (err) {
+        console.log(err)
+        res.status(500).send({
+            err: "An error occured while attempting to update the database"
+        })
+    }
+})
+
 
 setupDatabase()
 
