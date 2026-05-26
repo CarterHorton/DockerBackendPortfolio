@@ -13,6 +13,3 @@ Content-Type: application/json
     "title": "Encryption Program",
     "content": "I've been working on a program that can encrypt and decrypt a USB drive. This is the process"
 }
-
-###
-GET http://localhost:3000/setup

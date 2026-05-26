@@ -1,5 +1,5 @@
-const express =  require('express')
-const pool = require('./db')
+const express = require('express')
+const { setup, pool } = require('./db')
 const fs = require('fs-extra')
 const path = require('path')
 
@@ -7,6 +7,12 @@ const port = 3000
 
 const app = express()
 app.use(express.json()) // Allows the use of JSON file type
+// Setup database
+async function setupDatabase () {
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    console.log("Starting connection to database...")
+    await setup()
+}
 
 // Helper functions
 function re404(req, res) {
@@ -33,7 +39,9 @@ async function queryFromFile(filePath){
             console.log(`Queried - ${filePath}`)
             return 1
         } catch (err) {
-            console.log("Error executing sql")
+            if (err != 'relation "projects" already exists') {
+                console.log("Error executing sql")
+            }
             return 0
         }
     } catch (err) {
@@ -81,21 +89,6 @@ app.post('/', async (req, res) => {
     })
 })
 
-app.get('/setup', async (req, res) => {
-    var result = await queryFromFile(path.join(__dirname, '/queries/setup.sql'))
-    
-    if (result == 1) {
-        result = await queryFromFile(path.join(__dirname, '/queries/seeding.sql'))
-    }
-    if (result == 0) {
-        res.status(500).send({
-            message: "There was a problem with the server"
-        })
-    } else {
-        res.status(200).send({
-            message: "successfully set up the database with seeding"
-        })
-    }
-})
+setupDatabase()
 
 app.listen(port, () => console.log(`Server has started on port: ${port}`))
