@@ -6,6 +6,9 @@ GET http://localhost:3000/projects
 ###
 GET http://localhost:3000/journals
 ###
+GET http://localhost:3000/test
+
+###
 POST http://localhost:3000/project
 Content-Type: application/json
 
@@ -20,6 +23,6 @@ Content-Type: application/json
 
 {
     "project_id" : 2,
-    "title": "USB- Encryption Attempt 1",
-    "content": "I was able to throw together a relatively quick bit of code that would look through every file in the USB and attempt to encrypt the file. In a perfect world, with perfect hardware this program would have hypothetically worked. Instead it encrypted half the flash drive and forced the drive into a read-only state to protect the rest of the data."
+    "title": "USB- Encryption Attempt 2",
+    "content": "After talking with Grok, a popular AI model, I determined that because I did not program in proper precautions to the flash drive, the USB was improperly reporting when it was done writing and reading. Particularly when it got to the big files this became a problem and cause some corruption. The new version included some os level protections for the drive."
 }

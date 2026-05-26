@@ -2,6 +2,7 @@ const express = require('express')
 const { setup, pool } = require('./db')
 const fs = require('fs-extra')
 const path = require('path')
+const { testProjID } = require('./utils/testProjID')
 
 const port = 3000
 
@@ -82,13 +83,19 @@ app.get('/journals', async (req, res) => {
     }
 })
 
+app.get('/test', async (req, res) => {
+    res.status(200).send({
+        message1: "Server is online and working"
+    })
+})
+
 // post request
 app.post('/project', async (req, res) => {
     const {title, content} = req.body
     console.log(`Post - Project ${title}`)
     sql = "INSERT INTO projects (title, content) VALUES ($1, $2)"
     try {
-        result = pool.query(sql, [title, content])
+        const result = pool.query(sql, [title, content])
         console.log(result)
         res.status(200).send({
             message: "Added project to database"
@@ -103,10 +110,18 @@ app.post('/project', async (req, res) => {
 
 app.post('/journal', async (req, res) => {
     const {project_id, title, content} = req.body
+
+    // Check that project_id exist
+    const isID = await testProjID(project_id)
+    if (!isID) {
+        return res.status(422).send({
+            err: `The project ID: ${project_id} does not exist`
+        })
+    }
     console.log(`Post - Journal ${title}`)
     sql = "INSERT INTO journals (project_id, title, content) VALUES ($1, $2, $3)"
     try {
-        result = pool.query(sql, [project_id, title, content])
+        const result = pool.query(sql, [project_id, title, content])
         console.log(result)
         res.status(200).send({
             message: "Added journal to database"
