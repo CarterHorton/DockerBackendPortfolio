@@ -26,24 +26,6 @@ async function tableExist (tableName) {
     }
 }
 
-async function setup() {
-    // Check if setup has already occured
-    if (await tableExist('projects')) {
-        console.log(`Setup has already occured`)
-    } else {
-        var result = await queryFromFile(path.join(__dirname, '/queries/setup.sql'))
-        
-        if (result == 1) {
-            result = await queryFromFile(path.join(__dirname, '/queries/seeding.sql'))
-        }
-        if (result == 0) {
-            console.log("Something went wrong during Database Setup")
-        } else {
-            console.log("successfully set up the database with seeding")
-        }
-    }
-}
-
 async function queryFromFile(filePath){
     try {
         const sql = await fs.readFile(filePath, 'utf8');
@@ -73,6 +55,24 @@ async function queryFromFile(filePath){
         console.log(`Failed while reading ${filePath}`)
         console.log(err)
         return 0
+    }
+}
+
+async function setup() {
+    // Check if setup has already occured
+    if (await tableExist('projects')) {
+        console.log(`Setup has already occured`)
+    } else {
+        var result = await queryFromFile(path.join(__dirname, '/queries/setup.sql'))
+        
+        if (result == 1) {
+            result = await queryFromFile(path.join(__dirname, '/queries/seeding.sql'))
+        }
+        if (result == 0) {
+            console.log("Something went wrong during Database Setup")
+        } else {
+            console.log("successfully set up the database with seeding")
+        }
     }
 }
 
