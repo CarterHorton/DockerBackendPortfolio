@@ -19,7 +19,6 @@ async function tableExist (tableName) {
             AND table_name = $1
             );
             `, [tableName])
-        console.log(result.rows[0].exists)
         return result.rows[0].exists
     } catch (err) {
         console.log(`Error checking table ${tableName}`)
@@ -29,7 +28,7 @@ async function tableExist (tableName) {
 
 async function setup() {
     // Check if setup has already occured
-    if (tableExist('projects') == true) {
+    if (await tableExist('projects')) {
         console.log(`Setup has already occured`)
     } else {
         var result = await queryFromFile(path.join(__dirname, '/queries/setup.sql'))
