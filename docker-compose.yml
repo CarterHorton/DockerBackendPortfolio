@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  db: 
+    image: postgres # This pulls the docker image of postgres
+    environment:
+      POSTGRES_USER: chorton
+      POSTGRES_PASSWORD:  durmoh-gInzat-tafno3
+      POSTGRES_DB: portfolio
+
+  app:
+    image: p-backend
+    ports:
+      - 3000:3000

@@ -1,6 +1,7 @@
 const express =  require('express')
 const pool = require('./db')
 const fs = require('fs-extra')
+const path = require('path')
 
 const port = 3000
 
@@ -37,12 +38,26 @@ async function queryFromFile(filePath){
         }
     } catch (err) {
         console.log(`Failed while reading ${filePath}`)
+        console.log(err)
         return 0
     }
 }
 
 app.get('/', async (req, res) => {
     re404(req, res)
+})
+
+app.get('/projects', async (req, res) => {
+    try {
+        const data = await pool.query('SELECT * FROM projects')
+
+        res.status(200).send({
+            children: data.rows
+        })
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
 })
 
 app.post('/', async (req, res) => {
@@ -53,8 +68,8 @@ app.post('/', async (req, res) => {
     })
 })
 
-app.get('/setup', (req, res) => {
-    const result = queryFromFile('/queries/setup.sql')
+app.get('/setup', async (req, res) => {
+    const result = await queryFromFile(path.join(__dirname, '/queries/setup.sql'))
     if (result == 1) {
         res.status(200).send({
             message: "successfully set up the database with seeding"
