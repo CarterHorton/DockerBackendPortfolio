@@ -8,12 +8,13 @@ CREATE TABLE projects (
 
 CREATE TABLE journals (
   ID SERIAL PRIMARY KEY, 
-  CONSTRAINT project_id
-    FOREIGN KEY (ID)
-    REFERENCES projects(ID)
-    ON UPDATE CASCADE
-    ON DELETE CASCADE,
+  project_id integer,
   title VARCHAR(255) DEFAULT '[Redacted]',
   content TEXT NOT NULL,
-  date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT project_id
+    FOREIGN KEY (project_id)
+    REFERENCES projects (ID)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
 );

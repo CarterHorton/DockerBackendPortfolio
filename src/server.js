@@ -60,6 +60,19 @@ app.get('/projects', async (req, res) => {
     }
 })
 
+app.get('/journals', async (req, res) => {
+    try {
+        const data = await pool.query('SELECT * FROM journals')
+
+        res.status(200).send({
+            children: data.rows
+        })
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
 app.post('/', async (req, res) => {
     const {title, content} = req.body
     console.log(content)
@@ -69,14 +82,18 @@ app.post('/', async (req, res) => {
 })
 
 app.get('/setup', async (req, res) => {
-    const result = await queryFromFile(path.join(__dirname, '/queries/setup.sql'))
+    var result = await queryFromFile(path.join(__dirname, '/queries/setup.sql'))
+    
     if (result == 1) {
-        res.status(200).send({
-            message: "successfully set up the database with seeding"
-        })
-    } else {
+        result = await queryFromFile(path.join(__dirname, '/queries/seeding.sql'))
+    }
+    if (result == 0) {
         res.status(500).send({
             message: "There was a problem with the server"
+        })
+    } else {
+        res.status(200).send({
+            message: "successfully set up the database with seeding"
         })
     }
 })
