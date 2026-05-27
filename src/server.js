@@ -53,6 +53,21 @@ app.get('/journals', async (req, res) => {
     }
 })
 
+app.get('/journals/top5', async (req, res) => {
+    // This endpoint will get the top five most recently created journals
+    sql = `SELECT * FROM journals ORDER BY date_created DESC LIMIT 5;`
+    try {
+        const data = await pool.query(sql)
+
+        res.status(200).send({
+            top5: data
+        })
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
 app.get('/test', async (req, res) => {
     res.status(200).send({
         message1: "Server is online and working"
