@@ -134,6 +134,37 @@ app.post('/journal', async (req, res) => {
     }
 })
 
+// delete request
+app.delete('/journal/:id', async (req, res) => {
+    const passedID = req.params.id
+
+    // delete the passed ID instance of journal
+    sql = `DELETE FROM journals WHERE ID = ($1)`
+
+    try {
+        console.log(`Deleting from journal ID: ${passedID}`)
+        const result = await pool.query(sql, [passedID])
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
+app.delete('/project/:id', async (req, res) => {
+    const passedID = req.params.id
+
+    // delete the passed ID instance of journal
+    sql = `DELETE FROM projects WHERE ID = ($1)`
+
+    try {
+        console.log(`Deleting from project ID: ${passedID}`)
+        const result = await pool.query(sql, [passedID])
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
 
 setupDatabase()
 

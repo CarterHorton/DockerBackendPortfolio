@@ -30,3 +30,8 @@ Content-Type: application/json
     "title": "USB- Encryption Attempt 1",
     "content": "After talking with Grok, a popular AI model, I determined that because I did not program in proper precautions to the flash drive, the USB was improperly reporting when it was done writing and reading. Particularly when it got to the big files this became a problem and cause some corruption. The new version included some os level protections for the drive."
 }
+
+###
+DELETE http://localhost:3000/journal/15
+###
+DELETE http://localhost:3000/project/2
