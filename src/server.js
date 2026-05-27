@@ -246,6 +246,23 @@ app.patch('/project/content/:id', (req, res) => {
     }
 })
 
+app.patch('/project/end/:id', (req, res) => {
+    const passedID = req.params.id
+    const sql = `UPDATE projects
+    SET end_date = CURRENT_TIMESTAMP
+    WHERE ID = ($1)`
+
+    try {
+        const result = pool.query(sql, [passedID])
+        res.status(200).send({
+            message: "Successfully ended project"
+        })
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
 
 setupDatabase()
 

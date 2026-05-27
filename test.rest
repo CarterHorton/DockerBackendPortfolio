@@ -64,3 +64,5 @@ Content-Type: application/json
 {
     "content": "The data has been elluded and created cooly"
 }
+###
+PATCH http://localhost:3000/project/end/1
