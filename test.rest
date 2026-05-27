@@ -8,6 +8,8 @@ GET http://localhost:3000/journals
 ###
 GET http://localhost:3000/journals/top5
 ###
+GET http://localhost:3000/projects/top5
+###
 GET http://localhost:3000/test
 
 ###

@@ -60,7 +60,22 @@ app.get('/journals/top5', async (req, res) => {
         const data = await pool.query(sql)
 
         res.status(200).send({
-            top5: data
+            top5: data.rows
+        })
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
+app.get('/projects/top5', async (req, res) => {
+    // This endpoint will get the top five most recently created journals
+    sql = `SELECT * FROM projects ORDER BY start_date DESC LIMIT 5;`
+    try {
+        const data = await pool.query(sql)
+
+        res.status(200).send({
+            top5: data.rows
         })
     } catch (err) {
         console.log(err)
