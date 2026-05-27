@@ -35,3 +35,32 @@ Content-Type: application/json
 DELETE http://localhost:3000/journal/15
 ###
 DELETE http://localhost:3000/project/2
+
+###
+PATCH http://localhost:3000/journal/title/3
+Content-Type: application/json
+
+{
+    "title": "Maybe I'm not cool"
+}
+###
+PATCH http://localhost:3000/journal/content/3
+Content-Type: application/json
+
+{
+    "content": "I am adjusting the data"
+}
+###
+PATCH http://localhost:3000/project/title/1
+Content-Type: application/json
+
+{
+    "title": "SQL PROJECT"
+}
+###
+PATCH http://localhost:3000/project/content/1
+Content-Type: application/json
+
+{
+    "content": "The data has been elluded and created cooly"
+}

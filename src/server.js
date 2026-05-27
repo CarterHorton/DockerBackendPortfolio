@@ -139,7 +139,7 @@ app.delete('/journal/:id', async (req, res) => {
     const passedID = req.params.id
 
     // delete the passed ID instance of journal
-    sql = `DELETE FROM journals WHERE ID = ($1)`
+    const sql = `DELETE FROM journals WHERE ID = ($1)`
 
     try {
         console.log(`Deleting from journal ID: ${passedID}`)
@@ -154,11 +154,92 @@ app.delete('/project/:id', async (req, res) => {
     const passedID = req.params.id
 
     // delete the passed ID instance of journal
-    sql = `DELETE FROM projects WHERE ID = ($1)`
+    const sql = `DELETE FROM projects WHERE ID = ($1)`
 
     try {
         console.log(`Deleting from project ID: ${passedID}`)
         const result = await pool.query(sql, [passedID])
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
+// update request
+app.patch('/journal/title/:id', (req, res) => {
+    // We want to update the title, based off the id
+    const passedID = req.params.id
+    const newTitle = req.body.title
+
+    const sql = `UPDATE journals
+    SET title = ($1)
+    WHERE ID = ($2);`
+
+    try {
+        const result = pool.query(sql, [newTitle, passedID])
+        res.status(200).send({
+            message: "Successfully modified journal title"
+        })
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
+app.patch('/journal/content/:id', (req, res) => {
+    // We want to update the title, based off the id
+    const passedID = req.params.id
+    const newContent = req.body.content
+
+    const sql = `UPDATE journals
+    SET content = ($1)
+    WHERE ID = ($2);`
+
+    try {
+        const result = pool.query(sql, [newContent, passedID])
+        res.status(200).send({
+            message: "Successfully modified journal content"
+        })
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
+app.patch('/project/title/:id', (req, res) => {
+    // We want to update the title, based off the id
+    const passedID = req.params.id
+    const newTitle = req.body.title
+
+    const sql = `UPDATE projects
+    SET title = ($1)
+    WHERE ID = ($2);`
+
+    try {
+        const result = pool.query(sql, [newTitle, passedID])
+        res.status(200).send({
+            message: "Successfully modified project title"
+        })
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
+app.patch('/project/content/:id', (req, res) => {
+    // We want to update the title, based off the id
+    const passedID = req.params.id
+    const newContent = req.body.content
+
+    const sql = `UPDATE projects
+    SET content = ($1)
+    WHERE ID = ($2);`
+
+    try {
+        const result = pool.query(sql, [newContent, passedID])
+        res.status(200).send({
+            message: "Successfully modified project content"
+        })
     } catch (err) {
         console.log(err)
         res.sendStatus(500)
