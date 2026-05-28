@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const { setup, pool } = require('./db')
 const fs = require('fs-extra')

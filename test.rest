@@ -37,18 +37,21 @@ DELETE http://localhost:3000/journal/15
 DELETE http://localhost:3000/project/2
 
 ###
-PATCH http://localhost:3000/journal/title/3
+PATCH http://localhost:3000/journal/title/5
 Content-Type: application/json
 
 {
-    "title": "Maybe I'm not cool"
+    "title": "Data base server update"
 }
 ###
-PATCH http://localhost:3000/journal/content/3
+PATCH http://localhost:3000/journal/content/5
 Content-Type: application/json
 
 {
-    "content": "I am adjusting the data"
+    "content": "I know you guys have been waiting a long time for this. And here it is. Conent that is coming directly from a backend!!! I would just
+    like to thank my mom, my dad, and of course myself for putting in all the effort to make this dream come true. Technically I could push this code to production
+    but what would the fun in that be when I haven't even added a way for me to add more data yet. So no. I must persist and continue adding more and more until everything
+    is as I want it. But soon. I promise you this. Soon."
 }
 ###
 PATCH http://localhost:3000/project/title/1
