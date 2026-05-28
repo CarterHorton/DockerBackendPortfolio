@@ -10,6 +10,10 @@ const port = 3000
 
 const app = express()
 app.use(express.json()) // Allows the use of JSON file type
+// Setup CORS to trust the server
+const cors = require('cors')
+app.use(cors({ origin: 'http://localhost:4200' }))
+
 // Setup database
 async function setupDatabase () {
     await new Promise(resolve => setTimeout(resolve, 2000))
