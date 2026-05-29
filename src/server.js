@@ -34,7 +34,7 @@ function re404(req, res) {
 }
 
 // Authentication
-app.post('/login', async (req, res) => {
+app.post('/supersecretadmin/login', async (req, res) => {
     const username = req.body.username
     const password = req.body.password
 
@@ -44,7 +44,7 @@ app.post('/login', async (req, res) => {
 
         const user = { name: username }
 
-        const accessToken = jwt.sign(user, process.env.SUPER_DUPER_SECRET_KEY)
+        const accessToken = jwt.sign(user, process.env.SUPER_DUPER_SECRET_KEY, { expiresIn: '1h'})
         res.json({
             accessToken: accessToken
         })
@@ -140,7 +140,7 @@ app.get('/verifyToken', authenticateToken, (req, res) => {
 })
 
 // post request
-app.post('/project', async (req, res) => {
+app.post('/project', authenticateToken, async (req, res) => {
     const {title, content} = req.body
     console.log(`Post - Project ${title}`)
     sql = "INSERT INTO projects (title, content) VALUES ($1, $2)"
@@ -158,7 +158,7 @@ app.post('/project', async (req, res) => {
     }
 })
 
-app.post('/journal', async (req, res) => {
+app.post('/journal', authenticateToken, async (req, res) => {
     const {project_id, title, content} = req.body
 
     // Check that project_id exist
@@ -185,7 +185,7 @@ app.post('/journal', async (req, res) => {
 })
 
 // delete request
-app.delete('/journal/:id', async (req, res) => {
+app.delete('/journal/:id', authenticateToken, async (req, res) => {
     const passedID = req.params.id
 
     // delete the passed ID instance of journal
@@ -200,7 +200,7 @@ app.delete('/journal/:id', async (req, res) => {
     }
 })
 
-app.delete('/project/:id', async (req, res) => {
+app.delete('/project/:id', authenticateToken,   async (req, res) => {
     const passedID = req.params.id
 
     // delete the passed ID instance of journal
@@ -216,7 +216,7 @@ app.delete('/project/:id', async (req, res) => {
 })
 
 // update request
-app.patch('/journal/title/:id', (req, res) => {
+app.patch('/journal/title/:id', authenticateToken, (req, res) => {
     // We want to update the title, based off the id
     const passedID = req.params.id
     const newTitle = req.body.title
@@ -236,7 +236,7 @@ app.patch('/journal/title/:id', (req, res) => {
     }
 })
 
-app.patch('/journal/content/:id', (req, res) => {
+app.patch('/journal/content/:id', authenticateToken, (req, res) => {
     // We want to update the title, based off the id
     const passedID = req.params.id
     const newContent = req.body.content
@@ -256,7 +256,7 @@ app.patch('/journal/content/:id', (req, res) => {
     }
 })
 
-app.patch('/project/title/:id', (req, res) => {
+app.patch('/project/title/:id', authenticateToken, (req, res) => {
     // We want to update the title, based off the id
     const passedID = req.params.id
     const newTitle = req.body.title
@@ -276,7 +276,7 @@ app.patch('/project/title/:id', (req, res) => {
     }
 })
 
-app.patch('/project/content/:id', (req, res) => {
+app.patch('/project/content/:id', authenticateToken, (req, res) => {
     // We want to update the title, based off the id
     const passedID = req.params.id
     const newContent = req.body.content
@@ -296,7 +296,7 @@ app.patch('/project/content/:id', (req, res) => {
     }
 })
 
-app.patch('/project/end/:id', (req, res) => {
+app.patch('/project/end/:id', authenticateToken, (req, res) => {
     const passedID = req.params.id
     const sql = `UPDATE projects
     SET end_date = CURRENT_TIMESTAMP
