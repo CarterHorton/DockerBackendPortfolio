@@ -1,6 +1,16 @@
 ###
 GET http://localhost:3000
+###
+GET http://localhost:3000/verifyToken
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiTXIuRnJvZ01hbiIsImlhdCI6MTc4MDA3NDI2NH0.kGxlb_ogrHLTgaBLOe5PeHcZAkTyJcW7G7nQTrHQ-CI
+###
+POST http://localhost:3000/login
+Content-Type: application/json
 
+{
+    "username": "Mr.FrogMan",
+    "password": "L0veJ0yP3ace"
+}
 ###
 GET http://localhost:3000/projects
 ###
@@ -26,9 +36,9 @@ POST http://localhost:3000/journal
 Content-Type: application/json
 
 {
-    "project_id" : 2,
-    "title": "USB- Encryption Attempt 1",
-    "content": "After talking with Grok, a popular AI model, I determined that because I did not program in proper precautions to the flash drive, the USB was improperly reporting when it was done writing and reading. Particularly when it got to the big files this became a problem and cause some corruption. The new version included some os level protections for the drive."
+    "project_id" : 1,
+    "title": "WHAT IS GOING ON",
+    "content": "I'm genuinely confused as to why the thing isn't working"
 }
 
 ###

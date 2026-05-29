@@ -3,10 +3,16 @@ const express = require('express')
 const { setup, pool } = require('./db')
 const fs = require('fs-extra')
 const path = require('path')
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
 // Custom helper utils
 const { testProjID } = require('./utils/testProjID')
 const { queryFromFile } = require('./utils/queryFromFile')
 
+const singleUser = {
+    username: "Mr.FrogMan",
+    password: "$2b$10$0W4RNXTtpDBcuJJTjC6PgOMS0kh2n09DstoomYYdpkJnchc9x.7vi"
+}
 const port = 3000
 
 const app = express()
@@ -25,6 +31,39 @@ async function setupDatabase () {
 // Helper functions
 function re404(req, res) {
     res.status(404).sendFile(__dirname + '/pages/PageNotFound.html')
+}
+
+// Authentication
+app.post('/login', async (req, res) => {
+    const username = req.body.username
+    const password = req.body.password
+
+    const isPassed = await bcrypt.compare(password, singleUser.password)
+    if (username === singleUser.username && isPassed) {
+        console.log("login")
+
+        const user = { name: username }
+
+        const accessToken = jwt.sign(user, process.env.SUPER_DUPER_SECRET_KEY)
+        res.json({
+            accessToken: accessToken
+        })
+    } else {
+        res.status(401).send({error: "Invalid username or password"})
+    }
+})
+
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1]
+
+    if (token == null) return res.sendStatus(401)
+    
+    jwt.verify(token, process.env.SUPER_DUPER_SECRET_KEY, (err, user) => {
+        if (err) return res.sendStatus(403)
+        req.user = user
+        next()
+    })
 }
 
 // get request
@@ -91,6 +130,12 @@ app.get('/projects/top5', async (req, res) => {
 app.get('/test', async (req, res) => {
     res.status(200).send({
         message1: "Server is online and working"
+    })
+})
+
+app.get('/verifyToken', authenticateToken, (req, res) => {
+    res.status(200).send({
+        username: req.user.name
     })
 })
 
