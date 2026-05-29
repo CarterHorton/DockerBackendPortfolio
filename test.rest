@@ -4,12 +4,12 @@ GET http://localhost:3000
 GET http://localhost:3000/verifyToken
 Authorization: Bearer 
 ###
-POST http://localhost:3000/login
+POST http://localhost:3000/supersecretadmin/login
 Content-Type: application/json
 
 {
     "username": "Mr.FrogMan",
-    "password": "L0veJ0yP3ace"
+    "password": "DorianDuck#2026"
 }
 ###
 GET http://localhost:3000/projects

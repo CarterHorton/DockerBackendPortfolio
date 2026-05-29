@@ -11,7 +11,7 @@ const { queryFromFile } = require('./utils/queryFromFile')
 
 const singleUser = {
     username: "Mr.FrogMan",
-    password: "$2b$10$0W4RNXTtpDBcuJJTjC6PgOMS0kh2n09DstoomYYdpkJnchc9x.7vi"
+    password: "$2b$10$3OS9SzdcEozLL4FV517TEuMl7bisUnAHGfzQmfPx/J.Y59vv7sPFm"
 }
 const port = 3000
 
@@ -44,11 +44,12 @@ app.post('/supersecretadmin/login', async (req, res) => {
 
         const user = { name: username }
 
-        const accessToken = jwt.sign(user, process.env.SUPER_DUPER_SECRET_KEY, { expiresIn: '1h'})
+        const accessToken = jwt.sign(user, process.env.SUPER_DUPER_SECRET_KEY, { expiresIn: '1h' })
         res.json({
             accessToken: accessToken
         })
     } else {
+        console.log(`Attempted Login: ${username}, ${password}`)
         res.status(401).send({error: "Invalid username or password"})
     }
 })
