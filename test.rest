@@ -2,7 +2,7 @@
 GET http://localhost:3000
 ###
 GET http://localhost:3000/verifyToken
-Authorization: Bearer 
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiTXIuRnJvZ01hbiIsImlhdCI6MTc4MDA4NTUxOSwiZXhwIjoxNzgwMDg5MTE5fQ.bF5zyka0FdR9Wl5FQVhpkbTzOAFuW_B2s97AcoDF2yo
 ###
 POST http://localhost:3000/supersecretadmin/login
 Content-Type: application/json
@@ -24,6 +24,7 @@ GET http://localhost:3000/test
 
 ###
 POST http://localhost:3000/project
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiTXIuRnJvZ01hbiIsImlhdCI6MTc4MDA4NjE3MywiZXhwIjoxNzgwMDg5NzczfQ.W8fBigLBovElpRbZO3FCXvzfsnna-DziZIOI85-1HXw
 Content-Type: application/json
 
 {

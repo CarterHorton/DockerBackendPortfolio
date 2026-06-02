@@ -68,9 +68,9 @@ function authenticateToken(req, res, next) {
 }
 
 // get request
-app.get('/', async (req, res) => {
-    re404(req, res)
-})
+// app.get('/', async (req, res) => {
+//     re404(req, res)
+// })
 
 app.get('/projects', async (req, res) => {
     try {
@@ -88,6 +88,32 @@ app.get('/projects', async (req, res) => {
 app.get('/journals', async (req, res) => {
     try {
         const data = await pool.query('SELECT * FROM journals')
+
+        res.status(200).send({
+            children: data.rows
+        })
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
+app.get('/journal/:id', async (req, res) => {
+    try {
+        const data = await pool.query('SELECT * FROM journals WHERE ID=($1)', [req.params.id])
+
+        res.status(200).send({
+            children: data.rows
+        })
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
+app.get('/project/:id', async (req, res) => {
+    try {
+        const data = await pool.query('SELECT * FROM projects WHERE ID=($1)', [req.params.id])
 
         res.status(200).send({
             children: data.rows
