@@ -156,7 +156,7 @@ app.get('/projects/top5', async (req, res) => {
 
 app.get('/test', async (req, res) => {
     res.status(200).send({
-        message1: "Server is online and working"
+        message: "Server is online and working"
     })
 })
 
@@ -333,6 +333,46 @@ app.patch('/project/end/:id', authenticateToken, (req, res) => {
         const result = pool.query(sql, [passedID])
         res.status(200).send({
             message: "Successfully ended project"
+        })
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
+// Update whole journal
+app.patch('/journal/:id', authenticateToken, (req, res) => {
+    const passedID = req.params.id
+    const project_id = req.body.project_id
+    const title = req.body.title
+    const content = req.body.content
+    const sql = `UPDATE journals
+    SET project_id = ($1), title = ($2), content = ($3)
+    WHERE ID = ($4)`
+
+    try {
+        const result = pool.query(sql, [project_id, title, content, passedID])
+        res.status(200).send({
+            message: "Successfully updated journal"
+        })
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+// Update whole project
+app.patch('/project/:id', authenticateToken, (req, res) => {
+    const passedID = req.params.id
+    const title = req.body.title
+    const content = req.body.content
+    const sql = `UPDATE projects
+    SET title = ($1), content = ($2)
+    WHERE ID = ($3)`
+
+    try {
+        const result = pool.query(sql, [title, content, passedID])
+        res.status(200).send({
+            message: "Successfully updated project"
         })
     } catch (err) {
         console.log(err)

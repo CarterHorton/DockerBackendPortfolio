@@ -21,7 +21,8 @@ GET http://localhost:3000/journals/top5
 GET http://localhost:3000/projects/top5
 ###
 GET http://localhost:3000/test
-
+###
+GET http://localhost:3000/project/4
 ###
 POST http://localhost:3000/project
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiTXIuRnJvZ01hbiIsImlhdCI6MTc4MDA4NjE3MywiZXhwIjoxNzgwMDg5NzczfQ.W8fBigLBovElpRbZO3FCXvzfsnna-DziZIOI85-1HXw
@@ -80,3 +81,13 @@ Content-Type: application/json
 }
 ###
 PATCH http://localhost:3000/project/end/1
+
+###
+PATCH http://localhost:3000/project/4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiTXIuRnJvZ01hbiIsImlhdCI6MTc4MDUwMDA4OCwiZXhwIjoxNzgwNTAzNjg4fQ.9JmQYQl0St6yle7QlSNAdaIj4uTbnFIaoHVGLhhfqY8
+Content-Type: application/json
+
+{
+    "title": "This is a new title",
+    "content": "This is patched content"
+}
