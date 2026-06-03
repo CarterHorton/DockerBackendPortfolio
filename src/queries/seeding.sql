@@ -26,6 +26,5 @@ It is also important to make sure that that data is secured behind levels of sec
 -- later and I was able to get the cookie package installed via npm. After that it was super intuitive to set up the cookies to automatically pass and store the tokens within system memory');
 
 -- INSERT INTO journals (project_id, title, content)
--- VALUES (1, 'CRUD', 'With the login page done, and the dashboard limited to only those with a valid cookie everything is starting to come together. I did some testing and sure enough 
 -- all the endpoints and buttons work how intended. I am truelly disapointed none of you who read this will never see what I made on the backend (not legally at least). But as I 
 -- write this I realize I have, as a sophmore in college who has never taken a database class, created a create read update delete (CRUD) webapp entirely on my own.');
