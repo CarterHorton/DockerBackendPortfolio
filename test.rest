@@ -22,7 +22,7 @@ GET http://localhost:3000/projects/top5
 ###
 GET http://localhost:3000/test
 ###
-GET http://localhost:3000/project/4
+GET http://localhost:3000/project/3
 ###
 POST http://localhost:3000/project
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiTXIuRnJvZ01hbiIsImlhdCI6MTc4MDA4NjE3MywiZXhwIjoxNzgwMDg5NzczfQ.W8fBigLBovElpRbZO3FCXvzfsnna-DziZIOI85-1HXw
@@ -80,10 +80,11 @@ Content-Type: application/json
     "content": "The data has been elluded and created cooly"
 }
 ###
-PATCH http://localhost:3000/project/end/1
+GET http://localhost:3000/project/end/2
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiTXIuRnJvZ01hbiIsImlhdCI6MTc4MDUxMDU1MCwiZXhwIjoxNzgwNTE0MTUwfQ.KfLLS84WrDz-UjhyEzREhLeqJnJhjVBpkyq9wyczdGc
 
 ###
-PATCH http://localhost:3000/project/4
+PATCH http://localhost:3000/project/3
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiTXIuRnJvZ01hbiIsImlhdCI6MTc4MDUwMDA4OCwiZXhwIjoxNzgwNTAzNjg4fQ.9JmQYQl0St6yle7QlSNAdaIj4uTbnFIaoHVGLhhfqY8
 Content-Type: application/json
 

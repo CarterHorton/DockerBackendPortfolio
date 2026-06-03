@@ -221,6 +221,7 @@ app.delete('/journal/:id', authenticateToken, async (req, res) => {
     try {
         console.log(`Deleting from journal ID: ${passedID}`)
         const result = await pool.query(sql, [passedID])
+        res.sendStatus(204)
     } catch (err) {
         console.log(err)
         res.sendStatus(500)
@@ -323,7 +324,7 @@ app.patch('/project/content/:id', authenticateToken, (req, res) => {
     }
 })
 
-app.patch('/project/end/:id', authenticateToken, (req, res) => {
+app.get('/project/end/:id', authenticateToken, (req, res) => {
     const passedID = req.params.id
     const sql = `UPDATE projects
     SET end_date = CURRENT_TIMESTAMP
