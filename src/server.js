@@ -19,7 +19,16 @@ const app = express()
 app.use(express.json()) // Allows the use of JSON file type
 // Setup CORS to trust the server
 const cors = require('cors')
-app.use(cors({ origin: 'http://localhost:4200' }))
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow your domain + localhost for dev
+    if (!origin || origin.endsWith('carterbhorton.com')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+}));
 
 // Setup database
 async function setupDatabase () {
