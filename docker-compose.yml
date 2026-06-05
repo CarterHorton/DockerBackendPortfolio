@@ -10,8 +10,6 @@ services:
     image: p-backend
     ports:
       - 3000:3000
-    environment:
-      - SUPER_DUPER_SECRET_KEY=a296b6ca09839a4dffeb7c609628077566277b1ca23b730e0e280e28c819339267cdf07d805caef744993e59b6b0af4f9aeb21d2d4d60fb50a90831521e4423d
     env_file:
       - .env
 

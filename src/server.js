@@ -22,7 +22,32 @@ const cors = require('cors')
 app.use(cors({ origin: 'carterbhorton.com',
     credentials: true
  }))
+// rate limiting for Express
+const rateLimit = require('express-rate-limit')
+// Rate limiting
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // Set the time to 15 minute period
+    max: 3,
+    message: { error: 'Too many login attempts, please try again later.'},
+    standardHeaders: true,
+    legacyHeaders: false
+})
+const getApiRateLimit = rateLimit({
+    windowMs: 60 * 60 * 1000, // Set the time to be over the course of an hour
+    max: 50,
+    // Logs every time a request is blocked
+    handler: (req, res, next, options) => {
+        console.log({
+        event: 'rate_limit_exceeded',
+        ip: req.ip,
+        path: req.path,
+        timestamp: new Date().toISOString()
+        });
+        res.status(429).json({ error: 'Too many requests' });
+    },
 
+    // Logs only when the limit is first reached
+})
 // Setup database
 async function setupDatabase () {
     await new Promise(resolve => setTimeout(resolve, 2000))
@@ -36,7 +61,7 @@ function re404(req, res) {
 }
 
 // Authentication
-app.post('/supersecretadmin/login', async (req, res) => {
+app.post('/supersecretadmin/login', loginLimiter, async (req, res) => {
     const username = req.body.username
     const password = req.body.password
 
@@ -69,12 +94,14 @@ function authenticateToken(req, res, next) {
     })
 }
 
+
+
 // get request
 // app.get('/', async (req, res) => {
 //     re404(req, res)
 // })
 
-app.get('/projects', async (req, res) => {
+app.get('/projects', getApiRateLimit, async (req, res) => {
     try {
         const data = await pool.query('SELECT * FROM projects')
 
@@ -87,7 +114,7 @@ app.get('/projects', async (req, res) => {
     }
 })
 
-app.get('/journals', async (req, res) => {
+app.get('/journals', getApiRateLimit, async (req, res) => {
     try {
         const data = await pool.query('SELECT * FROM journals')
 
@@ -100,7 +127,7 @@ app.get('/journals', async (req, res) => {
     }
 })
 
-app.get('/journal/:id', async (req, res) => {
+app.get('/journal/:id', getApiRateLimit, async (req, res) => {
     try {
         const data = await pool.query('SELECT * FROM journals WHERE ID=($1)', [req.params.id])
 
@@ -113,7 +140,7 @@ app.get('/journal/:id', async (req, res) => {
     }
 })
 
-app.get('/project/:id', async (req, res) => {
+app.get('/project/:id', getApiRateLimit, async (req, res) => {
     try {
         const data = await pool.query('SELECT * FROM projects WHERE ID=($1)', [req.params.id])
 
@@ -126,7 +153,7 @@ app.get('/project/:id', async (req, res) => {
     }
 })
 
-app.get('/journals/top5', async (req, res) => {
+app.get('/journals/top5', getApiRateLimit, async (req, res) => {
     // This endpoint will get the top five most recently created journals
     sql = `SELECT * FROM journals ORDER BY date_created DESC LIMIT 5;`
     try {
@@ -141,7 +168,7 @@ app.get('/journals/top5', async (req, res) => {
     }
 })
 
-app.get('/projects/top5', async (req, res) => {
+app.get('/projects/top5', getApiRateLimit, async (req, res) => {
     // This endpoint will get the top five most recently created journals
     sql = `SELECT * FROM projects ORDER BY start_date DESC LIMIT 5;`
     try {
@@ -156,7 +183,7 @@ app.get('/projects/top5', async (req, res) => {
     }
 })
 
-app.get('/test', async (req, res) => {
+app.get('/test', getApiRateLimit, async (req, res) => {
     res.status(200).send({
         message: "Server is online and working"
     })
