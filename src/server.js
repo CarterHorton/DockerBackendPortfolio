@@ -103,7 +103,8 @@ function authenticateToken(req, res, next) {
 
 app.get('/projects', getApiRateLimit, async (req, res) => {
     try {
-        const data = await pool.query('SELECT * FROM projects')
+        const data = await pool.query(`SELECT * FROM projects
+            ORDER by start_date DESC;`)
 
         res.status(200).send({
             children: data.rows
@@ -116,7 +117,13 @@ app.get('/projects', getApiRateLimit, async (req, res) => {
 
 app.get('/journals', getApiRateLimit, async (req, res) => {
     try {
-        const data = await pool.query('SELECT * FROM journals')
+        const data = await pool.query(`SELECT journals.ID, journals.project_id, journals.title, journals.content, journals.date_created,
+            projects.title AS p_title
+            FROM journals
+            JOIN projects
+            ON journals.project_id = projects.id
+            ORDER BY journals.date_created DESC
+            ;`)
 
         res.status(200).send({
             children: data.rows
