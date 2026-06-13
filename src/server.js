@@ -190,6 +190,27 @@ app.get('/projects/top5', getApiRateLimit, async (req, res) => {
     }
 })
 
+app.get ('/journals/project/:id', getApiRateLimit, async (req, res) => {
+    try {
+        if (!req.params.id || isNaN(req.params.id) || parseInt(req.params.id) <= 0) throw "No ID supplied"
+        const data = await pool.query(`SELECT journals.ID, journals.project_id, journals.title, journals.content, journals.date_created,
+            projects.title AS p_title
+            FROM journals
+            JOIN projects
+            ON journals.project_id = projects.id
+            WHERE projects.id = ($1)
+            ORDER BY journals.date_created DESC
+            ;`, [req.params.id])
+
+        res.status(200).send({
+            children: data.rows
+        })
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
 app.get('/test', getApiRateLimit, async (req, res) => {
     res.status(200).send({
         message: "Server is online and working"
