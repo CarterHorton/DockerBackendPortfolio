@@ -20,6 +20,20 @@ GET http://localhost:3000/journals/top5
 ###
 GET http://localhost:3000/projects/top5
 ###
+GET http://localhost:3000/jorunals/next5
+Content-Type: application/json
+
+{
+    "offset": 10
+}
+###
+GET http://localhost:3000/projects/next5
+Content-Type: application/json
+
+{
+    "offset": 0
+}
+###
 GET http://localhost:3000/test
 ###
 GET http://localhost:3000/project/3

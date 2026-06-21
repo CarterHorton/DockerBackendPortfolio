@@ -22,6 +22,7 @@ const cors = require('cors')
 app.use(cors({ origin: 'carterbhorton.com',
     credentials: true
  }))
+
 // rate limiting for Express
 const rateLimit = require('express-rate-limit')
 // Rate limiting
@@ -32,9 +33,10 @@ const loginLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false
 })
+
 const getApiRateLimit = rateLimit({
     windowMs: 60 * 60 * 1000, // Set the time to be over the course of an hour
-    max: 50,
+    max: 75,
     // Logs every time a request is blocked
     handler: (req, res, next, options) => {
         console.log({
@@ -48,6 +50,7 @@ const getApiRateLimit = rateLimit({
 
     // Logs only when the limit is first reached
 })
+
 // Setup database
 async function setupDatabase () {
     await new Promise(resolve => setTimeout(resolve, 2000))
@@ -93,13 +96,6 @@ function authenticateToken(req, res, next) {
         next()
     })
 }
-
-
-
-// get request
-// app.get('/', async (req, res) => {
-//     re404(req, res)
-// })
 
 app.get('/projects', getApiRateLimit, async (req, res) => {
     try {
@@ -160,14 +156,52 @@ app.get('/project/:id', getApiRateLimit, async (req, res) => {
     }
 })
 
-app.get('/journals/top5', getApiRateLimit, async (req, res) => {
-    // This endpoint will get the top five most recently created journals
-    sql = `SELECT * FROM journals ORDER BY date_created DESC LIMIT 5;`
-    try {
-        const data = await pool.query(sql)
+// app.get('/journals/top5', getApiRateLimit, async (req, res) => {
+//     // This endpoint will get the top five most recently created journals
+//     sql = `SELECT * FROM journals ORDER BY date_created DESC LIMIT 5;`
+//     try {
+//         const data = await pool.query(sql)
 
+//         res.status(200).send({
+//             top5: data.rows
+//         })
+//     } catch (err) {
+//         console.log(err)
+//         res.sendStatus(500)
+//     }
+// })
+
+// app.get('/projects/top5', getApiRateLimit, async (req, res) => {
+//     // This endpoint will get the top five most recently created journals
+//     sql = `SELECT * FROM projects ORDER BY start_date DESC LIMIT 5;`
+//     try {
+//         const data = await pool.query(sql)
+
+//         res.status(200).send({
+//             top5: data.rows
+//         })
+//     } catch (err) {
+//         console.log(err)
+//         res.sendStatus(500)
+//     }
+// })
+
+app.get('/journals/next/:offset', async (req, res) => {
+    try {
+        const offset = Number(req.params.offset)
+        const pulling = 10
+        const data = await pool.query(`SELECT journals.ID, journals.project_id, journals.title, journals.content, journals.date_created,
+            projects.title AS p_title
+            FROM journals
+            JOIN projects
+            ON journals.project_id = projects.id
+            ORDER BY journals.date_created DESC
+            LIMIT ($1) OFFSET ($2)
+            ;`, [pulling, offset])
+        const newOffset = pulling + offset
         res.status(200).send({
-            top5: data.rows
+            children: data.rows,
+            nextOffset: newOffset
         })
     } catch (err) {
         console.log(err)
@@ -175,14 +209,39 @@ app.get('/journals/top5', getApiRateLimit, async (req, res) => {
     }
 })
 
-app.get('/projects/top5', getApiRateLimit, async (req, res) => {
-    // This endpoint will get the top five most recently created journals
-    sql = `SELECT * FROM projects ORDER BY start_date DESC LIMIT 5;`
+app.get('/projects/next/:offset', async (req, res) => {
     try {
-        const data = await pool.query(sql)
+        const offset = Number(req.params.offset)
+        const pulling = 10
+        const data = await pool.query(`SELECT * FROM projects
+            ORDER by start_date DESC
+            LIMIT ($1) OFFSET ($2);`,
+        [pulling, offset])
+        const newOffset = pulling + offset
+        res.status(200).send({
+            children: data.rows,
+            nextoffset: newOffset
+        })
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
+app.get ('/journals/project/:id', getApiRateLimit, async (req, res) => {
+    try {
+        if (!req.params.id || isNaN(req.params.id) || parseInt(req.params.id) <= 0) throw "No ID supplied"
+        const data = await pool.query(`SELECT journals.ID, journals.project_id, journals.title, journals.content, journals.date_created,
+            projects.title AS p_title
+            FROM journals
+            JOIN projects
+            ON journals.project_id = projects.id
+            WHERE projects.id = ($1)
+            ORDER BY journals.date_created DESC
+            ;`, [req.params.id])
 
         res.status(200).send({
-            top5: data.rows
+            children: data.rows
         })
     } catch (err) {
         console.log(err)
@@ -437,7 +496,6 @@ app.patch('/project/:id', authenticateToken, (req, res) => {
         res.sendStatus(500)
     }
 })
-
 
 setupDatabase()
 
