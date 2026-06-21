@@ -189,7 +189,7 @@ app.get('/project/:id', getApiRateLimit, async (req, res) => {
 app.get('/journals/next/:offset', async (req, res) => {
     try {
         const offset = Number(req.params.offset)
-        const pulling = 10
+        const pulling = 5
         const data = await pool.query(`SELECT journals.ID, journals.project_id, journals.title, journals.content, journals.date_created,
             projects.title AS p_title
             FROM journals
@@ -212,7 +212,7 @@ app.get('/journals/next/:offset', async (req, res) => {
 app.get('/projects/next/:offset', async (req, res) => {
     try {
         const offset = Number(req.params.offset)
-        const pulling = 10
+        const pulling = 5
         const data = await pool.query(`SELECT * FROM projects
             ORDER by start_date DESC
             LIMIT ($1) OFFSET ($2);`,
