@@ -19,7 +19,6 @@
   "homepage": "https://github.com/CarterHorton/DockerBackendPortfolio#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "brcypt": "^1.0.1",
     "concurrently": "^10.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -27,6 +26,7 @@
     "express-rate-limit": "^8.5.2",
     "fs-extra": "^11.3.5",
     "jsonwebtoken": "^9.0.3",
+    "multer": "^2.5.0",
     "pg": "^8.21.0"
   }
 }
