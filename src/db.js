@@ -58,13 +58,49 @@ async function queryFromFile(filePath){
     }
 }
 
+// Applies every file in queries/migrations that hasn't been applied yet, in
+// filename order. Each file runs in its own transaction on a single client,
+// and is recorded in schema_migrations so it never runs twice.
+// To change the schema later: add a new numbered file, never edit an old one.
+async function runMigrations() {
+    const dir = path.join(__dirname, 'queries', 'migrations')
+    const files = (await fs.readdir(dir)).filter(f => f.endsWith('.sql')).sort()
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS schema_migrations (
+        name TEXT PRIMARY KEY,
+        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`)
+    const applied = new Set(
+        (await pool.query('SELECT name FROM schema_migrations')).rows.map(r => r.name)
+    )
+
+    for (const file of files) {
+        if (applied.has(file)) continue
+        const sql = await fs.readFile(path.join(dir, file), 'utf8')
+        const client = await pool.connect()
+        try {
+            await client.query('BEGIN')
+            await client.query(sql)
+            await client.query('INSERT INTO schema_migrations (name) VALUES ($1)', [file])
+            await client.query('COMMIT')
+            console.log(`Applied migration ${file}`)
+        } catch (err) {
+            await client.query('ROLLBACK')
+            console.log(`Migration ${file} failed, rolled back`)
+            throw err
+        } finally {
+            client.release()
+        }
+    }
+}
+
 async function setup() {
     // Check if setup has already occured
     if (await tableExist('projects')) {
         console.log(`Setup has already occured`)
     } else {
         var result = await queryFromFile(path.join(__dirname, '/queries/setup.sql'))
-        
+
         if (result == 1) {
             result = await queryFromFile(path.join(__dirname, '/queries/seeding.sql'))
         }
@@ -74,6 +110,7 @@ async function setup() {
             console.log("successfully set up the database with seeding")
         }
     }
+    await runMigrations()
 }
 
 // export so that server.js can use this setup
