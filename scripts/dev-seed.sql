@@ -2,6 +2,7 @@
 -- Run against the local Docker database:
 --   docker compose exec -T db psql -U chorton -d portfolio < scripts/dev-seed.sql
 -- Never run this on the live server.
+-- Note: the article page already shows the title, so article content starts with ## sections.
 
 INSERT INTO projects (title, content, start_date, end_date) VALUES
   ('Mountain Bike Trail Map', 'A small app for logging local trails, difficulty, and conditions after rain.', '2025-08-01', '2025-10-15'),
@@ -24,18 +25,18 @@ INSERT INTO articles (title, summary, content, published, date_created, date_upd
 (
   'What I Learned Moving My Site Behind nginx',
   'Why a dev server is not a web server, and what changed when I switched.',
-  E'# What I Learned Moving My Site Behind nginx\n\nFor a long time my portfolio ran on `ng serve`. It worked, so I left it alone. Here is why I stopped.\n\n## The problem\n\n`ng serve` is a **development** server. It rebuilds on every change, keeps source maps around, and was never meant to face the internet.\n\n> A tool that works is not the same as a tool that is right for the job.\n\n## The fix\n\n1. Run `ng build` to produce static files.\n2. Point nginx at the `dist/` folder.\n3. Proxy `/api` to the backend.\n\n```nginx\nlocation /api/ {\n    proxy_pass http://localhost:3000/;\n}\n```\n\n## Results\n\n| | Before | After |\n|---|---|---|\n| First load | slow | fast |\n| Restarts | manual | automatic |\n\nThe biggest lesson: *read the docs for the thing you deploy*, not just the thing you build.',
+  E'For a long time my portfolio ran on `ng serve`. It worked, so I left it alone. Here is why I stopped.\n\n## The problem\n\n`ng serve` is a **development** server. It rebuilds on every change, keeps source maps around, and was never meant to face the internet.\n\n> A tool that works is not the same as a tool that is right for the job.\n\n## The fix\n\n1. Run `ng build` to produce static files.\n2. Point nginx at the `dist/` folder.\n3. Proxy `/api` to the backend.\n\n```nginx\nlocation /api/ {\n    proxy_pass http://localhost:3000/;\n}\n```\n\n## Results\n\n| | Before | After |\n|---|---|---|\n| First load | slow | fast |\n| Restarts | manual | automatic |\n\nThe biggest lesson: *read the docs for the thing you deploy*, not just the thing you build.',
   true, '2026-02-10', '2026-02-10', '2026-02-10'
 ),
 (
   'Notes on Writing Fifty Thousand Words in a Month',
   'NaNoWriMo taught me more about finishing things than about writing.',
-  E'# Notes on Writing Fifty Thousand Words in a Month\n\nThe first time I tried, I wrote twenty thousand words and stopped. Here is what changed the second time.\n\n- **Write first, edit later.** Editing while drafting kills momentum.\n- **Small daily targets.** 1,667 words a day sounds like a lot until you break it into three sittings.\n- **Tell people.** Accountability is a cheat code.\n\nThe same rules apply to side projects.',
+  E'The first time I tried, I wrote twenty thousand words and stopped. Here is what changed the second time.\n\n- **Write first, edit later.** Editing while drafting kills momentum.\n- **Small daily targets.** 1,667 words a day sounds like a lot until you break it into three sittings.\n- **Tell people.** Accountability is a cheat code.\n\nThe same rules apply to side projects.',
   true, '2026-03-01', '2026-03-01', '2026-03-01'
 ),
 (
   'Unfinished: Draft About Postgres Migrations',
   'This is a draft and should not show on the public site.',
-  E'# Draft\n\nIf you can see this on the public Articles page, drafts are leaking.',
+  E'If you can see this on the public Articles page, drafts are leaking.',
   false, '2026-04-01', '2026-04-01', NULL
 );
