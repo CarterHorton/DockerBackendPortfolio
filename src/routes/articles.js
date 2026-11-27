@@ -48,7 +48,7 @@ function readArticleBody(body, partial) {
     return { fields }
 }
 
-function articleRoutes({ authenticateToken, getApiRateLimit }) {
+function articleRoutes({ requireAdmin, getApiRateLimit }) {
     const router = express.Router()
 
     // Public: published articles, newest first, without content.
@@ -82,7 +82,7 @@ function articleRoutes({ authenticateToken, getApiRateLimit }) {
     })
 
     // Admin: every article, drafts included, with content (for the dashboard).
-    router.get('/articles/all', authenticateToken, async (req, res) => {
+    router.get('/articles/all', requireAdmin, async (req, res) => {
         try {
             const data = await pool.query('SELECT * FROM articles ORDER BY date_updated DESC')
             res.status(200).send({ children: data.rows })
@@ -92,7 +92,7 @@ function articleRoutes({ authenticateToken, getApiRateLimit }) {
         }
     })
 
-    router.post('/article', authenticateToken, async (req, res) => {
+    router.post('/article', requireAdmin, async (req, res) => {
         const { fields, error } = readArticleBody(req.body, false)
         if (error) return res.status(400).send({ err: error })
         try {
@@ -110,7 +110,7 @@ function articleRoutes({ authenticateToken, getApiRateLimit }) {
     })
 
     // Update only the fields that are sent.
-    router.patch('/article/:id', authenticateToken, async (req, res) => {
+    router.patch('/article/:id', requireAdmin, async (req, res) => {
         const id = parseId(req.params.id)
         if (!id) return res.status(400).send({ err: 'Invalid id' })
         const { fields, error } = readArticleBody(req.body, true)
@@ -135,7 +135,7 @@ function articleRoutes({ authenticateToken, getApiRateLimit }) {
         }
     })
 
-    router.delete('/article/:id', authenticateToken, async (req, res) => {
+    router.delete('/article/:id', requireAdmin, async (req, res) => {
         const id = parseId(req.params.id)
         if (!id) return res.status(400).send({ err: 'Invalid id' })
         try {

@@ -3,22 +3,19 @@ const express = require('express')
 const { setup, pool } = require('./db')
 const fs = require('fs-extra')
 const path = require('path')
-const jwt = require('jsonwebtoken')
-const bcrypt = require('bcrypt')
 // Custom helper utils
 const { testProjID } = require('./utils/testProjID')
 const { queryFromFile } = require('./utils/queryFromFile')
 const { imageRoutes, parseCoverImage } = require('./routes/images')
 const { articleRoutes } = require('./routes/articles')
+const { setupAuth, authRoutes, requireAdmin } = require('./auth')
 
-const singleUser = {
-    username: "Mr.FrogMan",
-    password: "$2b$10$3OS9SzdcEozLL4FV517TEuMl7bisUnAHGfzQmfPx/J.Y59vv7sPFm"
-}
 const port = 3000
 
 const app = express()
 app.use(express.json({ limit: '1mb' })) // Allows the use of JSON file type (1mb for long articles)
+// Sessions + Passport (see src/auth.js). Must come before any route that checks the login.
+setupAuth(app)
 // Setup CORS to trust the server
 const cors = require('cors')
 app.use(cors({ origin: 'carterbhorton.com',
@@ -32,6 +29,15 @@ const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // Set the time to 15 minute period
     max: 3,
     message: { error: 'Too many login attempts, please try again later.'},
+    standardHeaders: true,
+    legacyHeaders: false
+})
+
+// Only matters once ALLOW_REGISTRATION=true
+const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    message: { error: 'Too many sign-ups from this address, please try again later.' },
     standardHeaders: true,
     legacyHeaders: false
 })
@@ -65,43 +71,12 @@ function re404(req, res) {
     res.status(404).sendFile(__dirname + '/pages/PageNotFound.html')
 }
 
-// Authentication
-app.post('/supersecretadmin/login', loginLimiter, async (req, res) => {
-    const username = req.body.username
-    const password = req.body.password
-
-    const isPassed = await bcrypt.compare(password, singleUser.password)
-    if (username === singleUser.username && isPassed) {
-        console.log("login")
-
-        const user = { name: username }
-
-        const accessToken = jwt.sign(user, process.env.SUPER_DUPER_SECRET_KEY, { expiresIn: '1h' })
-        res.json({
-            accessToken: accessToken
-        })
-    } else {
-        console.log(`Attempted Login: ${username}, ${password}`)
-        res.status(401).send({error: "Invalid username or password"})
-    }
-})
-
-function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization']
-    const token = authHeader && authHeader.split(' ')[1]
-
-    if (token == null) return res.sendStatus(401)
-    
-    jwt.verify(token, process.env.SUPER_DUPER_SECRET_KEY, (err, user) => {
-        if (err) return res.sendStatus(403)
-        req.user = user
-        next()
-    })
-}
+// Authentication: /auth/login, /auth/logout, /auth/me, /auth/register
+app.use(authRoutes({ loginLimiter, registerLimiter }))
 
 // Images and articles live in their own files under ./routes
-app.use(imageRoutes({ authenticateToken }))
-app.use(articleRoutes({ authenticateToken, getApiRateLimit }))
+app.use(imageRoutes({ requireAdmin }))
+app.use(articleRoutes({ requireAdmin, getApiRateLimit }))
 
 app.get('/projects', getApiRateLimit, async (req, res) => {
     try {
@@ -282,14 +257,9 @@ app.get('/test', getApiRateLimit, async (req, res) => {
     })
 })
 
-app.get('/verifyToken', authenticateToken, (req, res) => {
-    res.status(200).send({
-        username: req.user.name
-    })
-})
 
 // post request
-app.post('/project', authenticateToken, async (req, res) => {
+app.post('/project', requireAdmin, async (req, res) => {
     const {title, content} = req.body
     const cover = parseCoverImage(req.body.cover_image)
     if (cover.error) return res.status(400).send({ err: cover.error })
@@ -308,7 +278,7 @@ app.post('/project', authenticateToken, async (req, res) => {
     }
 })
 
-app.post('/journal', authenticateToken, async (req, res) => {
+app.post('/journal', requireAdmin, async (req, res) => {
     const {project_id, title, content} = req.body
 
     // Check that project_id exist
@@ -334,7 +304,7 @@ app.post('/journal', authenticateToken, async (req, res) => {
 })
 
 // delete request
-app.delete('/journal/:id', authenticateToken, async (req, res) => {
+app.delete('/journal/:id', requireAdmin, async (req, res) => {
     const passedID = req.params.id
 
     // delete the passed ID instance of journal
@@ -350,7 +320,7 @@ app.delete('/journal/:id', authenticateToken, async (req, res) => {
     }
 })
 
-app.delete('/project/:id', authenticateToken,   async (req, res) => {
+app.delete('/project/:id', requireAdmin,   async (req, res) => {
     const passedID = req.params.id
 
     // delete the passed ID instance of journal
@@ -367,7 +337,7 @@ app.delete('/project/:id', authenticateToken,   async (req, res) => {
 })
 
 // update request
-app.patch('/journal/title/:id', authenticateToken, (req, res) => {
+app.patch('/journal/title/:id', requireAdmin, (req, res) => {
     // We want to update the title, based off the id
     const passedID = req.params.id
     const newTitle = req.body.title
@@ -387,7 +357,7 @@ app.patch('/journal/title/:id', authenticateToken, (req, res) => {
     }
 })
 
-app.patch('/journal/content/:id', authenticateToken, (req, res) => {
+app.patch('/journal/content/:id', requireAdmin, (req, res) => {
     // We want to update the title, based off the id
     const passedID = req.params.id
     const newContent = req.body.content
@@ -407,7 +377,7 @@ app.patch('/journal/content/:id', authenticateToken, (req, res) => {
     }
 })
 
-app.patch('/project/title/:id', authenticateToken, (req, res) => {
+app.patch('/project/title/:id', requireAdmin, (req, res) => {
     // We want to update the title, based off the id
     const passedID = req.params.id
     const newTitle = req.body.title
@@ -427,7 +397,7 @@ app.patch('/project/title/:id', authenticateToken, (req, res) => {
     }
 })
 
-app.patch('/project/content/:id', authenticateToken, (req, res) => {
+app.patch('/project/content/:id', requireAdmin, (req, res) => {
     // We want to update the title, based off the id
     const passedID = req.params.id
     const newContent = req.body.content
@@ -447,7 +417,7 @@ app.patch('/project/content/:id', authenticateToken, (req, res) => {
     }
 })
 
-app.get('/project/end/:id', authenticateToken, (req, res) => {
+app.get('/project/end/:id', requireAdmin, (req, res) => {
     const passedID = req.params.id
     const sql = `UPDATE projects
     SET end_date = CURRENT_TIMESTAMP
@@ -465,7 +435,7 @@ app.get('/project/end/:id', authenticateToken, (req, res) => {
 })
 
 // Update whole journal
-app.patch('/journal/:id', authenticateToken, async (req, res) => {
+app.patch('/journal/:id', requireAdmin, async (req, res) => {
     const passedID = req.params.id
     const project_id = req.body.project_id
     const title = req.body.title
@@ -486,7 +456,7 @@ app.patch('/journal/:id', authenticateToken, async (req, res) => {
 })
 // Update whole project
 // cover_image is optional: leave it out to keep the current image, send null to remove it.
-app.patch('/project/:id', authenticateToken, async (req, res) => {
+app.patch('/project/:id', requireAdmin, async (req, res) => {
     const passedID = req.params.id
     const title = req.body.title
     const content = req.body.content
@@ -506,6 +476,12 @@ app.patch('/project/:id', authenticateToken, async (req, res) => {
         console.log(err)
         res.sendStatus(500)
     }
+})
+
+// Errors passed to next(err): log them, answer with JSON instead of a stack trace
+app.use((err, req, res, next) => {
+    console.log(err)
+    res.status(500).send({ err: 'Something went wrong' })
 })
 
 setupDatabase()

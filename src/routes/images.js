@@ -41,7 +41,7 @@ const upload = multer({
     limits: { fileSize: MAX_BYTES, files: 1 }
 }).single('image')
 
-function imageRoutes({ authenticateToken }) {
+function imageRoutes({ requireAdmin }) {
     const router = express.Router()
     fs.ensureDirSync(UPLOAD_DIR)
 
@@ -55,7 +55,7 @@ function imageRoutes({ authenticateToken }) {
     }))
 
     // Upload one image (multipart form field "image"). Returns { filename }.
-    router.post('/image', authenticateToken, (req, res) => {
+    router.post('/image', requireAdmin, (req, res) => {
         upload(req, res, async (err) => {
             if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
                 return res.status(413).send({ err: `Image is larger than ${MAX_BYTES / 1024 / 1024} MB` })
@@ -82,7 +82,7 @@ function imageRoutes({ authenticateToken }) {
     })
 
     // List uploaded images, newest first (for picking one in the dashboard).
-    router.get('/images', authenticateToken, async (req, res) => {
+    router.get('/images', requireAdmin, async (req, res) => {
         try {
             const names = (await fs.readdir(UPLOAD_DIR)).filter(n => IMAGE_NAME.test(n))
             const children = await Promise.all(names.map(async (filename) => {
@@ -98,7 +98,7 @@ function imageRoutes({ authenticateToken }) {
     })
 
     // Delete an image, unless something still uses it.
-    router.delete('/image/:filename', authenticateToken, async (req, res) => {
+    router.delete('/image/:filename', requireAdmin, async (req, res) => {
         const { filename } = req.params
         if (!IMAGE_NAME.test(filename)) return res.status(400).send({ err: 'Invalid image name' })
         try {
