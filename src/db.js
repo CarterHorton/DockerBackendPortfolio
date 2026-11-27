@@ -10,6 +10,13 @@ const pool = new Pool({
     database: 'portfolio'
 })
 
+// An idle connection can drop (e.g. the database restarts). Without this
+// handler that error is unhandled and crashes the whole server; with it the
+// pool just discards the dead connection and opens a new one on the next query.
+pool.on('error', (err) => {
+    console.log(`Database connection lost: ${err.message}`)
+})
+
 async function tableExist (tableName) {
     try {
         const result = await pool.query(`
