@@ -10,17 +10,49 @@ const readline = require('readline')
 const { pool } = require('../src/db')
 const { validateCredentials, hashPassword } = require('../src/auth')
 
-// Interactive: prompt in the terminal, hiding the password as it's typed.
-function askTerminal(rl, question, hidden) {
-    return new Promise((resolve) => {
-        if (!hidden) return rl.question(question, resolve)
-        const write = rl._writeToOutput.bind(rl)
-        rl._writeToOutput = (text) => { if (text.includes(question)) write(text) }
-        rl.question(question, (answer) => {
-            rl._writeToOutput = write
+// Interactive: a normal visible prompt (for the username).
+function askVisible(question) {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+    return new Promise((resolve) => rl.question(question, (answer) => {
+        rl.close()
+        resolve(answer)
+    }))
+}
+
+// Interactive: read a password without echoing anything. The terminal is put
+// in raw mode and keys are handled one at a time, so nothing typed (including
+// edits like backspace) is ever printed.
+function askHidden(question) {
+    return new Promise((resolve, reject) => {
+        const stdin = process.stdin
+        let answer = ''
+        process.stdout.write(question)
+        stdin.setRawMode(true)
+        stdin.setEncoding('utf8')
+        stdin.resume()
+
+        const finish = (err) => {
+            stdin.removeListener('data', onData)
+            stdin.setRawMode(false)
+            stdin.pause()
             process.stdout.write('\n')
-            resolve(answer)
-        })
+            err ? reject(err) : resolve(answer)
+        }
+        const onData = (chunk) => {
+            // Ignore arrow keys and other escape sequences
+            if (chunk.startsWith('\u001b')) return
+            for (const ch of chunk) {
+                if (ch === '\r' || ch === '\n') return finish()
+                if (ch === '\u0003') return finish(new Error('Cancelled')) // Ctrl+C
+                if (ch === '\u0004') return finish()                       // Ctrl+D
+                if (ch === '\u007f' || ch === '\b') {                      // Backspace
+                    answer = Array.from(answer).slice(0, -1).join('')
+                    continue
+                }
+                if (ch >= ' ') answer += ch // skip other control characters
+            }
+        }
+        stdin.on('data', onData)
     })
 }
 
@@ -34,11 +66,9 @@ async function readPipedLines() {
 async function main() {
     let username, password, again
     if (process.stdin.isTTY) {
-        const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-        username = await askTerminal(rl, 'Admin username: ')
-        password = await askTerminal(rl, 'Password (min 12 characters): ', true)
-        again = await askTerminal(rl, 'Repeat password: ', true)
-        rl.close()
+        username = await askVisible('Admin username: ')
+        password = await askHidden('Password (min 12 characters, hidden): ')
+        again = await askHidden('Repeat password: ')
     } else {
         [username = '', password = '', again = ''] = await readPipedLines()
     }
