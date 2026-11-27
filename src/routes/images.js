@@ -104,11 +104,10 @@ function imageRoutes({ authenticateToken }) {
         try {
             const inUse = await pool.query(`
                 SELECT 1 FROM projects WHERE cover_image = $1
-                UNION ALL SELECT 1 FROM journals WHERE cover_image = $1
                 UNION ALL SELECT 1 FROM articles WHERE cover_image = $1 OR strpos(content, $1) > 0
                 LIMIT 1`, [filename])
             if (inUse.rowCount > 0) {
-                return res.status(409).send({ err: 'Image is still used by a project, journal or article' })
+                return res.status(409).send({ err: 'Image is still used by a project or article' })
             }
             await fs.remove(path.join(UPLOAD_DIR, filename))
             res.sendStatus(204)

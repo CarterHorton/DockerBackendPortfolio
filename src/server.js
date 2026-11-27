@@ -119,7 +119,7 @@ app.get('/projects', getApiRateLimit, async (req, res) => {
 
 app.get('/journals', getApiRateLimit, async (req, res) => {
     try {
-        const data = await pool.query(`SELECT journals.ID, journals.project_id, journals.title, journals.content, journals.date_created, journals.cover_image,
+        const data = await pool.query(`SELECT journals.ID, journals.project_id, journals.title, journals.content, journals.date_created,
             projects.title AS p_title
             FROM journals
             JOIN projects
@@ -196,7 +196,7 @@ app.get('/journals/next/:offset', async (req, res) => {
     try {
         const offset = Number(req.params.offset)
         const pulling = 5
-        const data = await pool.query(`SELECT journals.ID, journals.project_id, journals.title, journals.content, journals.date_created, journals.cover_image,
+        const data = await pool.query(`SELECT journals.ID, journals.project_id, journals.title, journals.content, journals.date_created,
             projects.title AS p_title
             FROM journals
             JOIN projects
@@ -237,7 +237,7 @@ app.get('/projects/next/:offset', async (req, res) => {
 app.get ('/journals/project/:id', getApiRateLimit, async (req, res) => {
     try {
         if (!req.params.id || isNaN(req.params.id) || parseInt(req.params.id) <= 0) throw "No ID supplied"
-        const data = await pool.query(`SELECT journals.ID, journals.project_id, journals.title, journals.content, journals.date_created, journals.cover_image,
+        const data = await pool.query(`SELECT journals.ID, journals.project_id, journals.title, journals.content, journals.date_created,
             projects.title AS p_title
             FROM journals
             JOIN projects
@@ -258,7 +258,7 @@ app.get ('/journals/project/:id', getApiRateLimit, async (req, res) => {
 app.get ('/journals/project/:id', getApiRateLimit, async (req, res) => {
     try {
         if (!req.params.id || isNaN(req.params.id) || parseInt(req.params.id) <= 0) throw "No ID supplied"
-        const data = await pool.query(`SELECT journals.ID, journals.project_id, journals.title, journals.content, journals.date_created, journals.cover_image,
+        const data = await pool.query(`SELECT journals.ID, journals.project_id, journals.title, journals.content, journals.date_created,
             projects.title AS p_title
             FROM journals
             JOIN projects
@@ -310,8 +310,6 @@ app.post('/project', authenticateToken, async (req, res) => {
 
 app.post('/journal', authenticateToken, async (req, res) => {
     const {project_id, title, content} = req.body
-    const cover = parseCoverImage(req.body.cover_image)
-    if (cover.error) return res.status(400).send({ err: cover.error })
 
     // Check that project_id exist
     const isID = await testProjID(project_id)
@@ -321,9 +319,9 @@ app.post('/journal', authenticateToken, async (req, res) => {
         })
     }
     console.log(`Post - Journal ${title}`)
-    const sql = "INSERT INTO journals (project_id, title, content, cover_image) VALUES ($1, $2, $3, $4)"
+    const sql = "INSERT INTO journals (project_id, title, content) VALUES ($1, $2, $3)"
     try {
-        await pool.query(sql, [project_id, title, content, cover.value ?? null])
+        await pool.query(sql, [project_id, title, content])
         res.status(200).send({
             message: "Added journal to database"
         })
@@ -467,21 +465,17 @@ app.get('/project/end/:id', authenticateToken, (req, res) => {
 })
 
 // Update whole journal
-// cover_image is optional: leave it out to keep the current image, send null to remove it.
 app.patch('/journal/:id', authenticateToken, async (req, res) => {
     const passedID = req.params.id
     const project_id = req.body.project_id
     const title = req.body.title
     const content = req.body.content
-    const cover = parseCoverImage(req.body.cover_image)
-    if (cover.error) return res.status(400).send({ err: cover.error })
     const sql = `UPDATE journals
-    SET project_id = ($1), title = ($2), content = ($3),
-        cover_image = CASE WHEN ($5) THEN ($6) ELSE cover_image END
+    SET project_id = ($1), title = ($2), content = ($3)
     WHERE ID = ($4)`
 
     try {
-        await pool.query(sql, [project_id, title, content, passedID, cover.provided, cover.value ?? null])
+        await pool.query(sql, [project_id, title, content, passedID])
         res.status(200).send({
             message: "Successfully updated journal"
         })

@@ -2,7 +2,7 @@
 
 ## Description
 This is the backend for the website, able to run as a docker container.
-The database contains 3 tables: projects, journals and articles. Projects and journals can each have one cover image; articles are long-form posts written in Markdown.
+The database contains 3 tables: projects, journals and articles. Projects and articles can each have one cover image; articles are long-form posts written in Markdown.
 Images are stored as files in an uploads folder (a Docker volume); the database only stores their file names.
 The sql is ran by postgresql and is connected through the pg module into the node server.
 This backend is made only with basic checks for input confirmation and CRUD activities.
@@ -35,7 +35,7 @@ Serves an uploaded image. The frontend uses `/api/uploads/<filename>`
 ### /project
 Takes title and content (and optional cover_image) in json format in the req.body adds new data to database
 ### /journal
-Takes project_id and test to make sure that project_id exist, title, content, and optional cover_image. Adds new row to database
+Takes project_id and test to make sure that project_id exist, title, and content. Adds new row to database
 ### /article (auth)
 Takes title, content (Markdown), and optional summary, cover_image, published (default false). Returns the new id
 ### /image (auth)
@@ -48,7 +48,7 @@ Deletes the project with the given id and cascades all journals with it
 ### /article/:id (auth)
 Deletes the article
 ### /image/:filename (auth)
-Deletes the image file, unless a project, journal or article still uses it (409)
+Deletes the image file, unless a project or article still uses it (409)
 ## PATCH 
 ### /journal/title/:id
 Update the title of journal with id
@@ -61,7 +61,7 @@ Update the content of the project with id
 ### /project/end/:id
 Send a SQL query to set the end date to the current time of a project
 ### /journal/:id and /project/:id
-Update the whole entry. `cover_image` is optional: leave it out to keep the current image, send `null` to remove it
+Update the whole entry. For projects, `cover_image` is optional: leave it out to keep the current image, send `null` to remove it
 ### /article/:id (auth)
 Update only the fields sent (title, summary, content, cover_image, published). The first time an article is published, date_published is set
 
