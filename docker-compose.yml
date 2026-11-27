@@ -8,10 +8,14 @@ services:
 
   app:
     image: p-backend
+    build: .
     ports:
       - 3000:3000
     env_file:
       - .env
+    volumes:
+      - portfolio-uploads:/usr/src/app/uploads
 
 volumes:
   portfolio-data:
+  portfolio-uploads:

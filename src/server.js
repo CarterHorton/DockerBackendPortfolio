@@ -8,6 +8,8 @@ const bcrypt = require('bcrypt')
 // Custom helper utils
 const { testProjID } = require('./utils/testProjID')
 const { queryFromFile } = require('./utils/queryFromFile')
+const { imageRoutes, parseCoverImage } = require('./routes/images')
+const { articleRoutes } = require('./routes/articles')
 
 const singleUser = {
     username: "Mr.FrogMan",
@@ -16,7 +18,7 @@ const singleUser = {
 const port = 3000
 
 const app = express()
-app.use(express.json()) // Allows the use of JSON file type
+app.use(express.json({ limit: '1mb' })) // Allows the use of JSON file type (1mb for long articles)
 // Setup CORS to trust the server
 const cors = require('cors')
 app.use(cors({ origin: 'carterbhorton.com',
@@ -96,6 +98,10 @@ function authenticateToken(req, res, next) {
         next()
     })
 }
+
+// Images and articles live in their own files under ./routes
+app.use(imageRoutes({ authenticateToken }))
+app.use(articleRoutes({ authenticateToken, getApiRateLimit }))
 
 app.get('/projects', getApiRateLimit, async (req, res) => {
     try {
@@ -285,11 +291,12 @@ app.get('/verifyToken', authenticateToken, (req, res) => {
 // post request
 app.post('/project', authenticateToken, async (req, res) => {
     const {title, content} = req.body
+    const cover = parseCoverImage(req.body.cover_image)
+    if (cover.error) return res.status(400).send({ err: cover.error })
     console.log(`Post - Project ${title}`)
-    sql = "INSERT INTO projects (title, content) VALUES ($1, $2)"
+    const sql = "INSERT INTO projects (title, content, cover_image) VALUES ($1, $2, $3)"
     try {
-        const result = pool.query(sql, [title, content])
-        console.log(result)
+        await pool.query(sql, [title, content, cover.value ?? null])
         res.status(200).send({
             message: "Added project to database"
         })
@@ -312,10 +319,9 @@ app.post('/journal', authenticateToken, async (req, res) => {
         })
     }
     console.log(`Post - Journal ${title}`)
-    sql = "INSERT INTO journals (project_id, title, content) VALUES ($1, $2, $3)"
+    const sql = "INSERT INTO journals (project_id, title, content) VALUES ($1, $2, $3)"
     try {
-        const result = pool.query(sql, [project_id, title, content])
-        console.log(result)
+        await pool.query(sql, [project_id, title, content])
         res.status(200).send({
             message: "Added journal to database"
         })
@@ -353,6 +359,7 @@ app.delete('/project/:id', authenticateToken,   async (req, res) => {
     try {
         console.log(`Deleting from project ID: ${passedID}`)
         const result = await pool.query(sql, [passedID])
+        res.sendStatus(204)
     } catch (err) {
         console.log(err)
         res.sendStatus(500)
@@ -458,7 +465,7 @@ app.get('/project/end/:id', authenticateToken, (req, res) => {
 })
 
 // Update whole journal
-app.patch('/journal/:id', authenticateToken, (req, res) => {
+app.patch('/journal/:id', authenticateToken, async (req, res) => {
     const passedID = req.params.id
     const project_id = req.body.project_id
     const title = req.body.title
@@ -468,7 +475,7 @@ app.patch('/journal/:id', authenticateToken, (req, res) => {
     WHERE ID = ($4)`
 
     try {
-        const result = pool.query(sql, [project_id, title, content, passedID])
+        await pool.query(sql, [project_id, title, content, passedID])
         res.status(200).send({
             message: "Successfully updated journal"
         })
@@ -478,16 +485,20 @@ app.patch('/journal/:id', authenticateToken, (req, res) => {
     }
 })
 // Update whole project
-app.patch('/project/:id', authenticateToken, (req, res) => {
+// cover_image is optional: leave it out to keep the current image, send null to remove it.
+app.patch('/project/:id', authenticateToken, async (req, res) => {
     const passedID = req.params.id
     const title = req.body.title
     const content = req.body.content
+    const cover = parseCoverImage(req.body.cover_image)
+    if (cover.error) return res.status(400).send({ err: cover.error })
     const sql = `UPDATE projects
-    SET title = ($1), content = ($2)
+    SET title = ($1), content = ($2),
+        cover_image = CASE WHEN ($4) THEN ($5) ELSE cover_image END
     WHERE ID = ($3)`
 
     try {
-        const result = pool.query(sql, [title, content, passedID])
+        await pool.query(sql, [title, content, passedID, cover.provided, cover.value ?? null])
         res.status(200).send({
             message: "Successfully updated project"
         })
